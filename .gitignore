@@ -1,0 +1,18 @@
+# Ignore Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Ignore SLURM files
+*.slurm
+
+# Ignore data and output directories
+data/
+save/
+AAAoutput/
+wandb/
+pgd-auto/
+
+# Ignore compiled outputs and intermediate directories
+CLIP-models/
+datasets/
