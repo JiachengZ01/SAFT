@@ -247,7 +247,7 @@ class DatasetManager:
             "cifar100": {"class": CIFAR100, "path": "./datasets/CIFAR100", "transform": "preprocess"},
             "cifar10": {"class": CIFAR10, "path": "./datasets/CIFAR10", "transform": "preprocess"},
             "ImageNet": {"class": ImageFolder, "path": "/data/gpfs/datasets/Imagenet/ILSVRC/Data/CLS-LOC/train", "transform": "preprocess224"},
-            "tinyImageNet": {"class": ImageFolderForTinyImageNet, "path": "../data/tiny-imagenet-200/train/", "transform": "preprocess224"}
+            "tinyImageNet": {"class": ImageFolderForTinyImageNet, "path": "/data/tiny-imagenet-200/train/", "transform": "preprocess224"}
         }
     
     def load_train_dataset(self, args):
@@ -286,26 +286,23 @@ class DatasetManager:
     def _load_single_val_dataset(self, dataset_name):
         """Load a single validation dataset"""
         dataset_loaders = {
-            "cifar10": lambda: CIFAR10("../datasets/CIFAR10", transform=self.preprocess, download=True, train=False),
-            "cifar100": lambda: CIFAR100("../datasets/CIFAR100", transform=self.preprocess, download=True, train=False),
-            "Caltech101": lambda: caltech.Caltech101("../datasets/", target_type="category", transform=self.preprocess224, download=True),
-            "PCAM": lambda: pcam.PCAM("../datasets/", split="test", transform=self.preprocess224, download=False),
-            "STL10": lambda: STL10("../datasets/STL10", split="test", transform=self.preprocess, download=True),
-            "SUN397": lambda: sun397.SUN397("../datasets/", transform=self.preprocess224, download=True),
-            "StanfordCars": lambda: stanford_cars.StanfordCars("../datasets/", split="test", transform=self.preprocess224, download=False),
-            "Food101": lambda: food101.Food101("../datasets/", split="test", transform=self.preprocess224, download=True),
-            "oxfordpet": lambda: oxford_iiit_pet.OxfordIIITPet("../datasets/", split="test", transform=self.preprocess224, download=True),
-            "EuroSAT": lambda: eurosat.EuroSAT("../datasets/", transform=self.preprocess224, download=True),
-            "Caltech256": lambda: caltech.Caltech256("../datasets/", transform=self.preprocess224, download=True),
-            "flowers102": lambda: flowers102.Flowers102("../datasets/", split="test", transform=self.preprocess224, download=True),
-            "Country211": lambda: country211.Country211("../datasets/", split="test", transform=self.preprocess224, download=True),
-            "dtd": lambda: dtd.DTD("../datasets/", split="test", transform=self.preprocess224, download=True),
-            "fgvc_aircraft": lambda: fgvc_aircraft.FGVCAircraft("../datasets/", split="test", transform=self.preprocess224, download=True),
+            "cifar10": lambda: CIFAR10("/datasets/CIFAR10", transform=self.preprocess, download=True, train=False),
+            "cifar100": lambda: CIFAR100("/datasets/CIFAR100", transform=self.preprocess, download=True, train=False),
+            "Caltech101": lambda: caltech.Caltech101("/datasets/", target_type="category", transform=self.preprocess224, download=True),
+            "PCAM": lambda: pcam.PCAM("/datasets/", split="test", transform=self.preprocess224, download=False),
+            "STL10": lambda: STL10("/datasets/STL10", split="test", transform=self.preprocess, download=True),
+            "SUN397": lambda: sun397.SUN397("/datasets/", transform=self.preprocess224, download=True),
+            "StanfordCars": lambda: stanford_cars.StanfordCars("/datasets/", split="test", transform=self.preprocess224, download=False),
+            "Food101": lambda: food101.Food101("/datasets/", split="test", transform=self.preprocess224, download=True),
+            "oxfordpet": lambda: oxford_iiit_pet.OxfordIIITPet("/datasets/", split="test", transform=self.preprocess224, download=True),
+            "EuroSAT": lambda: eurosat.EuroSAT("/datasets/", transform=self.preprocess224, download=True),
+            "Caltech256": lambda: caltech.Caltech256("/datasets/", transform=self.preprocess224, download=True),
+            "flowers102": lambda: flowers102.Flowers102("/datasets/", split="test", transform=self.preprocess224, download=True),
+            "Country211": lambda: country211.Country211("/datasets/", split="test", transform=self.preprocess224, download=True),
+            "dtd": lambda: dtd.DTD("/datasets/", split="test", transform=self.preprocess224, download=True),
+            "fgvc_aircraft": lambda: fgvc_aircraft.FGVCAircraft("/datasets/", split="test", transform=self.preprocess224, download=True),
             "ImageNet": lambda: ImageFolder("/data/gpfs/datasets/Imagenet/ILSVRC/Data/CLS-LOC/val", transform=self.preprocess224),
-            "tinyImageNet": lambda: ImageFolder("../data/tiny-imagenet-200/val/", transform=self.preprocess224),
-            "ImageNet-A": lambda: ImageFolder("../datasets/imagenet-a/", transform=self.preprocess224),
-            "ImageNet-R": lambda: ImageFolder("../datasets/imagenet-r/", transform=self.preprocess224),
-            "ImageNet-O": lambda: ImageFolder("../datasets/imagenet-o/", transform=self.preprocess224),
+            "tinyImageNet": lambda: ImageFolder("/data/tiny-imagenet-200/val/", transform=self.preprocess224),
         }
         
         if dataset_name not in dataset_loaders:
@@ -429,10 +426,15 @@ class TextPromptManager:
     def _generate_enhanced_prompts(model, args, class_names, device):
         """Generate enhanced prompts with multiple descriptions per class"""
         # Load description database
-        description_file = (
-            "prompts/tinyimagenet_descriptions_by_category.json" if args.MLLM 
-            else "prompts/cupl.json"
-        )
+        if args.MLLM:
+            if args.dataset == "tinyImageNet":
+                description_file = "prompts/tinyimagenet_descriptions_by_category.json"
+            elif args.dataset == "ImageNet":
+                description_file = "prompts/imagenet_descriptions_by_category.json"
+            else:
+                description_file = "prompts/cupl.json"  # fallback
+        else:
+            description_file = "prompts/cupl.json"
         
         try:
             with open(description_file, "r") as f:
