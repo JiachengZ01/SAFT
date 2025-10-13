@@ -160,10 +160,7 @@ threadpoolctl==3.5.0
 timm==0.6.13
 tinycss2==1.2.1
 tokenizers==0.13.3
-# torch==2.4.0+cu124  # 单独安装
-# torchaudio==2.4.0+cu124  # 单独安装
 torchdiffeq==0.2.3
-# torchvision==0.19.0+cu124  # 单独安装
 tornado==6.3.1
 tqdm==4.65.0
 traitlets==5.9.0

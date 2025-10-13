@@ -138,22 +138,9 @@ class TrainingManager:
         val_dataset_name = self._get_val_dataset_names()
         val_dataset_list = load_val_datasets(self.args, val_dataset_name)
 
-        # Create data loaders
-        def collate_fn(batch):
-            images, target, caption = zip(*batch)
-            images = torch.stack(images, 0)
-            target = torch.tensor(target)
-            text_tokens = clip.tokenize(caption, truncate=True)
-            return images, target, text_tokens
-
-        generator = torch.Generator()
-        if self.args.seed is not None:
-            generator.manual_seed(self.args.seed)
-
         train_loader = DataLoader(
             train_dataset, batch_size=self.args.batch_size, shuffle=True,
-            pin_memory=True, collate_fn=collate_fn, num_workers=4,
-            generator=generator if self.args.seed is not None else None,
+            pin_memory=True, num_workers=4,
         )
 
         val_loader_list = [
@@ -183,7 +170,9 @@ class TrainingManager:
         print(f"template: {template}")
 
         texts_train = get_text_prompts_train(model, self.args, train_dataset, self.device, template=template)
-        texts_list = get_text_prompts_val(val_dataset_list, val_dataset_name, template=template)
+        # If a list of DataLoaders was passed in, convert to their underlying Datasets
+        datasets_for_val = [dl.dataset for dl in val_dataset_list]
+        texts_list = get_text_prompts_val(datasets_for_val, val_dataset_name, template=template)
 
         return texts_train, texts_list
 
@@ -232,7 +221,7 @@ def train(train_loader, texts, model, frozen_model, prompter, add_prompter,
     text_tokens = clip.tokenize(texts).to(device)
     text_tokens = text_tokens.view(args.ncaps, 200, -1)
 
-    for i, (images, target, caption) in enumerate(tqdm(train_loader)):
+    for i, (images, target) in enumerate(tqdm(train_loader)):
         data_time.update(time.time() - end)
 
         # Update learning rate

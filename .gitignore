@@ -16,3 +16,6 @@ pgd-auto/
 # Ignore compiled outputs and intermediate directories
 CLIP-models/
 datasets/
+
+# Ignore output files
+output.txt

@@ -35,28 +35,6 @@ def default_loader(path: str):
         return img.convert("RGB")
 
 
-class ImageFolderForTinyImageNet(ImageFolder):
-    """Custom ImageFolder for TinyImageNet with caption support"""
-    
-    def __init__(self, root, transform=None):
-        super().__init__(root, transform=transform)
-        # Load captions from JSONL file
-        with open("prompts/tiny_imagenet.jsonl", "r") as f:
-            self.meta = [json.loads(line) for line in f]
-            # Create path-to-caption mapping
-            self.meta = {self.root + d["path"]: d["caption"] for d in self.meta}
-
-    def __getitem__(self, index):
-        """Return image, target, and caption"""
-        path, target = self.samples[index]
-        sample = self.loader(path)
-        if self.transform is not None:
-            sample = self.transform(sample)
-        if self.target_transform is not None:
-            target = self.target_transform(target)
-        return (sample, target, self.meta[path])
-
-
 class UtilityManager:
     """Utility functions for model training and evaluation"""
     
@@ -247,7 +225,7 @@ class DatasetManager:
             "cifar100": {"class": CIFAR100, "path": "./datasets/CIFAR100", "transform": "preprocess"},
             "cifar10": {"class": CIFAR10, "path": "./datasets/CIFAR10", "transform": "preprocess"},
             "ImageNet": {"class": ImageFolder, "path": "/data/gpfs/datasets/Imagenet/ILSVRC/Data/CLS-LOC/train", "transform": "preprocess224"},
-            "tinyImageNet": {"class": ImageFolderForTinyImageNet, "path": "/data/tiny-imagenet-200/train/", "transform": "preprocess224"}
+            "tinyImageNet": {"class": ImageFolder, "path": "./data/tiny-imagenet-200/train/", "transform": "preprocess224"}
         }
     
     def load_train_dataset(self, args):
@@ -286,23 +264,23 @@ class DatasetManager:
     def _load_single_val_dataset(self, dataset_name):
         """Load a single validation dataset"""
         dataset_loaders = {
-            "cifar10": lambda: CIFAR10("/datasets/CIFAR10", transform=self.preprocess, download=True, train=False),
-            "cifar100": lambda: CIFAR100("/datasets/CIFAR100", transform=self.preprocess, download=True, train=False),
-            "Caltech101": lambda: caltech.Caltech101("/datasets/", target_type="category", transform=self.preprocess224, download=True),
-            "PCAM": lambda: pcam.PCAM("/datasets/", split="test", transform=self.preprocess224, download=False),
-            "STL10": lambda: STL10("/datasets/STL10", split="test", transform=self.preprocess, download=True),
-            "SUN397": lambda: sun397.SUN397("/datasets/", transform=self.preprocess224, download=True),
-            "StanfordCars": lambda: stanford_cars.StanfordCars("/datasets/", split="test", transform=self.preprocess224, download=False),
-            "Food101": lambda: food101.Food101("/datasets/", split="test", transform=self.preprocess224, download=True),
-            "oxfordpet": lambda: oxford_iiit_pet.OxfordIIITPet("/datasets/", split="test", transform=self.preprocess224, download=True),
-            "EuroSAT": lambda: eurosat.EuroSAT("/datasets/", transform=self.preprocess224, download=True),
-            "Caltech256": lambda: caltech.Caltech256("/datasets/", transform=self.preprocess224, download=True),
-            "flowers102": lambda: flowers102.Flowers102("/datasets/", split="test", transform=self.preprocess224, download=True),
-            "Country211": lambda: country211.Country211("/datasets/", split="test", transform=self.preprocess224, download=True),
-            "dtd": lambda: dtd.DTD("/datasets/", split="test", transform=self.preprocess224, download=True),
-            "fgvc_aircraft": lambda: fgvc_aircraft.FGVCAircraft("/datasets/", split="test", transform=self.preprocess224, download=True),
-            "ImageNet": lambda: ImageFolder("/data/gpfs/datasets/Imagenet/ILSVRC/Data/CLS-LOC/val", transform=self.preprocess224),
-            "tinyImageNet": lambda: ImageFolder("/data/tiny-imagenet-200/val/", transform=self.preprocess224),
+            "cifar10": lambda: CIFAR10("./datasets/CIFAR10", transform=self.preprocess, download=True, train=False),
+            "cifar100": lambda: CIFAR100("./datasets/CIFAR100", transform=self.preprocess, download=True, train=False),
+            "Caltech101": lambda: caltech.Caltech101("./datasets/", target_type="category", transform=self.preprocess224, download=True),
+            "PCAM": lambda: pcam.PCAM("./datasets/", split="test", transform=self.preprocess224, download=False),
+            "STL10": lambda: STL10("./datasets/STL10", split="test", transform=self.preprocess, download=True),
+            "SUN397": lambda: sun397.SUN397("./datasets/", transform=self.preprocess224, download=True),
+            "StanfordCars": lambda: stanford_cars.StanfordCars("./datasets/", split="test", transform=self.preprocess224, download=False),
+            "Food101": lambda: food101.Food101("./datasets/", split="test", transform=self.preprocess224, download=True),
+            "oxfordpet": lambda: oxford_iiit_pet.OxfordIIITPet("./datasets/", split="test", transform=self.preprocess224, download=True),
+            "EuroSAT": lambda: eurosat.EuroSAT("./datasets/", transform=self.preprocess224, download=True),
+            "Caltech256": lambda: caltech.Caltech256("./datasets/", transform=self.preprocess224, download=True),
+            "flowers102": lambda: flowers102.Flowers102("./datasets/", split="test", transform=self.preprocess224, download=True),
+            "Country211": lambda: country211.Country211("./datasets/", split="test", transform=self.preprocess224, download=True),
+            "dtd": lambda: dtd.DTD("./datasets/", split="test", transform=self.preprocess224, download=True),
+            "fgvc_aircraft": lambda: fgvc_aircraft.FGVCAircraft("./datasets/", split="test", transform=self.preprocess224, download=True),
+            "ImageNet": lambda: ImageFolder("./data/gpfs/datasets/Imagenet/ILSVRC/Data/CLS-LOC/val", transform=self.preprocess224),
+            "tinyImageNet": lambda: ImageFolder("./data/tiny-imagenet-200/val/", transform=self.preprocess224),
         }
         
         if dataset_name not in dataset_loaders:
