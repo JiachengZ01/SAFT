@@ -1,4 +1,4 @@
-"""Main entry point for SAFT (Semantically Aligned Fine-Tuning) training pipeline"""
+"""Main entry point for SAFT (Semantic-aware Adversarial Fine-Tuning) training pipeline"""
 
 from __future__ import print_function
 import torch
