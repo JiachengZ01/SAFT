@@ -59,8 +59,9 @@ python main.py --ncaps 5 --batch_size 128 --epochs 10 --seed 1 --MLLM
 ```
 
 ### Evaluation
+A SAFT-L checkpoint fine-tuned on Tiny-ImageNet is provided at [this link](https://drive.google.com/drive/folders/14_CwrrAe1_otRRysMf8bmXruBl-6gxpD?usp=sharing). To evaluate, copy the checkpoint directory into `./save/models/`.
 
-#### Evaluation on TGA-ZSR
+#### Evaluation on TGA-ZSR (Baseline)
 
 ```bash
 python main.py --Method "TGA-ZSR" --ncaps 0 --seed 1 --checkpoint
@@ -90,7 +91,7 @@ The code uses **Weights & Biases (wandb)** for experiment tracking by default.
 
 ## Output
 ### Saved Models
-Models are saved to `./save/models/{experiment_name}/`:
+Checkpoints are saved to `./save/models/{experiment_name}/`:
 
 ```
 model_final_seed{index}.pth.tar
