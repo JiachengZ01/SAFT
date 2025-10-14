@@ -3,19 +3,18 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# Ignore SLURM files
+# Ignore script files
 *.slurm
+scripts/
 
 # Ignore data and output directories
 data/
 save/
-AAAoutput/
 wandb/
-pgd-auto/
 
 # Ignore compiled outputs and intermediate directories
 CLIP-models/
 datasets/
 
 # Ignore output files
-output.txt
+logs/

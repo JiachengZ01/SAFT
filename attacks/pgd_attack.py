@@ -9,9 +9,7 @@ def clamp(X, lower_limit, upper_limit):
 
 
 def pgd_CLIP(
-    prompter,
     model,
-    add_prompter,
     X,
     target,
     text_tokens,
@@ -21,27 +19,16 @@ def pgd_CLIP(
     device,
     ncaps,
     epsilon=2 / 255,
-    seed=None,
 ):
-    # Create generator for reproducible randomness if seed is provided
-    if seed is not None:
-        generator = torch.Generator(device=device).manual_seed(seed)
-    else:
-        generator = None
-    
+    """
+    PGD attack for CLIP model.
+    """
     delta = torch.zeros_like(X).to(device)
     if norm == "l_inf":
-        if generator is not None:
-            delta = delta.uniform_(-epsilon, epsilon, generator=generator)
-        else:
-            delta.uniform_(-epsilon, epsilon)
+        delta.uniform_(-epsilon, epsilon)
     elif norm == "l_2":
-        if generator is not None:
-            delta = delta.normal_(generator=generator)
-            r = torch.zeros_like(delta.view(delta.size(0), -1).norm(p=2, dim=1).view(delta.size(0), 1, 1, 1)).uniform_(0, 1, generator=generator)
-        else:
-            delta.normal_()
-            r = torch.zeros_like(delta.view(delta.size(0), -1).norm(p=2, dim=1).view(delta.size(0), 1, 1, 1)).uniform_(0, 1)
+        delta.normal_()
+        r = torch.zeros_like(delta.view(delta.size(0), -1).norm(p=2, dim=1).view(delta.size(0), 1, 1, 1)).uniform_(0, 1)
         d_flat = delta.view(delta.size(0), -1)
         n = d_flat.norm(p=2, dim=1).view(delta.size(0), 1, 1, 1)
         delta *= r / n * epsilon
@@ -59,13 +46,8 @@ def pgd_CLIP(
 
     for _ in range(attack_iters):
         _images = clip_img_preprocessing(X + delta, device)
-        if prompter is not None:
-            prompted_images = prompter(_images)
-        else:
-            prompted_images = _images
-        prompt_token = add_prompter() if add_prompter is not None else None
 
-        logits_per_image, _, _ = multiGPU_CLIP_classwise(model, prompted_images, text_tokens, prompt_token)  # (ncaps, bs, n_class)
+        logits_per_image, _, _ = multiGPU_CLIP_classwise(model, _images, text_tokens)
         _, _, n_class = logits_per_image.shape
         logits_per_image = logits_per_image.view(-1, n_class)  # (ncaps * bs, n_class)
         CrossEntropyLoss = torch.nn.CrossEntropyLoss(reduction="mean").to(device)

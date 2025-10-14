@@ -621,35 +621,23 @@ def clip_img_preprocessing(X, device):
     return X
 
 
-def multiGPU_CLIP_image_logits(
-    images, model, text_tokens, device, prompter=None, add_prompter=None
-):
+def multiGPU_CLIP_image_logits(images, model, text_tokens, device):
+    """
+    Compute CLIP image logits.
+    """
     image_tokens = clip_img_preprocessing(images, device)
-    prompt_token = None if add_prompter is None else add_prompter()
-    if prompter is not None:
-        image_tokens = prompter(image_tokens)
-    return multiGPU_CLIP(model, image_tokens, text_tokens, prompt_token=prompt_token)[
+    return multiGPU_CLIP(model, image_tokens, text_tokens)[
         0
     ]  # (ncaps, bs, n_class)
 
 
-def multiGPU_CLIP(clip_model, images, text_tokens, prompt_token=None):
-    if prompt_token is not None:
-        bs = images.size(0)
-        prompt_token = prompt_token.repeat(bs, 1, 1)
-    # if text_tokens.size()[0] == 1000:
-    #     "Processing ImageNet"
-    #     # img_embed = clip_model.encode_image(images, prompt_token)[:, 0, :]
-
-    #     # text_features = imagenet_text_features(clip_model, text_tokens).to(device)
-    #     img_embed, scale_text_embed = clip_model(images, text_tokens, prompt_token)
-    #     img_embed = img_embed / img_embed.norm(dim=-1, keepdim=True)
-    #     scale_text_embed = clip_model.logit_scale.exp() * scale_text_embed
-    # else:
+def multiGPU_CLIP(clip_model, images, text_tokens):
+    """
+    Compute CLIP embeddings and logits.
+    """
     img_embed, scale_text_embed = clip_model(
-        images, text_tokens, prompt_token
+        images, text_tokens, None
     )  # torch.Size([50, 64, 512]),torch.Size([10, 512])
-    # text_features = clip_model.encode_text(text_tokens)#torch.Size([100, 77])
     logits_per_image = img_embed @ scale_text_embed.t()
     logits_per_text = scale_text_embed @ img_embed.t()
     return (
@@ -659,19 +647,18 @@ def multiGPU_CLIP(clip_model, images, text_tokens, prompt_token=None):
     )  # text_features[target,:]
 
 
-def multiGPU_CLIP_classwise(clip_model, images, text_tokens, prompt_token=None):
+def multiGPU_CLIP_classwise(clip_model, images, text_tokens):
+    """
+    Compute CLIP logits in a class-wise manner for multiple text descriptions.
+    """
     ncaps = text_tokens.size(0)  # extract ncaps from text_tokens
     n_class = text_tokens.size(1)  # extract n_class from text_tokens
     n_feature = text_tokens.size(2)  # extract n_feature from text_tokens
 
     flattened_text_tokens = text_tokens.view(-1, n_feature)  # (ncaps*n_class, 77)
 
-    if prompt_token is not None:
-        bs = images.size(0)
-        prompt_token = prompt_token.repeat(bs, 1, 1)
-
     img_embed, scale_text_embed = clip_model(
-        images, flattened_text_tokens, prompt_token
+        images, flattened_text_tokens, None
     )
 
     scale_text_embed = scale_text_embed.view(
@@ -689,29 +676,3 @@ def multiGPU_CLIP_classwise(clip_model, images, text_tokens, prompt_token=None):
     )  # (ncaps, n_class, 512) @ (ncaps, 512, bs) -> (ncaps, n_class, bs)
 
     return logits_per_image, logits_per_text, scale_text_embed
-
-
-def multiGPU_CLIP_classwise_random_target(
-    clip_model, images, random_text_tokens, prompt_token=None
-):
-    # ncaps = text_tokens.size(0)  # extract ncaps from text_tokens
-    # n_class = text_tokens.size(1) # extract n_class from text_tokens
-    # n_feature = text_tokens.size(2) # extract n_feature from text_tokens
-
-    # random_text_tokens = text_tokens[torch.randperm(ncaps)][0, :, :] # shuffle text_tokens
-
-    if prompt_token is not None:
-        bs = images.size(0)
-        prompt_token = prompt_token.repeat(bs, 1, 1)
-
-    img_embed, scale_text_embed = clip_model(
-        images, random_text_tokens, prompt_token
-    )  # torch.Size([50, 64, 512]),torch.Size([10, 512])
-    # text_features = clip_model.encode_text(text_tokens)#torch.Size([100, 77])
-    logits_per_image = img_embed @ scale_text_embed.t()
-    logits_per_text = scale_text_embed @ img_embed.t()
-    return (
-        logits_per_image,
-        logits_per_text,
-        scale_text_embed,
-    )  # text_features[target,:]

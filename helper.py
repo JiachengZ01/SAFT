@@ -44,7 +44,6 @@ class UtilityManager:
         os.environ["WANDB__SERVICE_WAIT"] = "300"
         while True:
             try:
-                wandb.require("core")
                 wandb_run = wandb.init(
                     project=project_name,
                     name=model_name,
@@ -90,16 +89,26 @@ class UtilityManager:
         return class_names
 
     @staticmethod
-    def save_checkpoint(state, args, is_best=False, filename="checkpoint.pth.tar"):
-        """Save model checkpoint"""
-        savefile = os.path.join(args.model_folder, filename)
-        bestfile = os.path.join(
-            args.model_folder, f"model_best_seed{args.index}.pth.tar"
-        )
-        torch.save(state, savefile)
-        if is_best:
-            shutil.copyfile(savefile, bestfile)
-            print("saved best file")
+    def save_checkpoint(state, args, is_final=False):
+        """Save model checkpoint
+
+        Args:
+            state: Model state dict to save
+            args: Configuration arguments
+            is_final: If True, saves as final model; otherwise saves as temporary checkpoint
+        """
+        if is_final:
+            checkpoint_path = os.path.join(
+                args.model_folder, f"model_final_seed{args.seed}.pth.tar"
+            )
+            torch.save(state, checkpoint_path)
+            print(f"Saved final model to {checkpoint_path}")
+        else:
+            checkpoint_path = os.path.join(
+                args.model_folder, f"checkpoint_seed{args.seed}.pth.tar"
+            )
+            torch.save(state, checkpoint_path)
+            print(f"Saved checkpoint to {checkpoint_path}")
 
     @staticmethod
     def assign_learning_rate(optimizer, new_lr):
@@ -468,10 +477,10 @@ class AttentionMapProcessor:
     """Processes attention maps for text-guided adversarial training"""
     
     @staticmethod
-    def compute_attention_map(text_features, clip_model, images, prompt_token, args):
+    def compute_attention_map(text_features, clip_model, images, args):
         """Compute text-guided attention map from image and text features"""
         # Extract and normalize image features
-        image_features = clip_model.module.encode_image(images, prompt_token)
+        image_features = clip_model.module.encode_image(images, None)
         image_features = image_features / image_features.norm(dim=1, keepdim=True)
         
         # Get spatial features (excluding CLS token)
@@ -528,10 +537,10 @@ class AttentionMapProcessor:
 
 
 # Legacy function wrapper for backward compatibility
-def attention_map_text(text_features, clip_model, images, prompt_token, args):
+def attention_map_text(text_features, clip_model, images, args):
     """Legacy wrapper for attention map computation"""
     return AttentionMapProcessor.compute_attention_map(
-        text_features, clip_model, images, prompt_token, args
+        text_features, clip_model, images, args
     )
 
 

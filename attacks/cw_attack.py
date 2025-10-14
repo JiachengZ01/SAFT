@@ -18,7 +18,6 @@ def clamp(X, lower_limit, upper_limit):
     return torch.max(torch.min(X, upper_limit), lower_limit)
 
 def attack_CW(
-    prompter,
     model,
     X,
     target,
@@ -29,6 +28,9 @@ def attack_CW(
     device,
     epsilon=0,
 ):
+    """
+    CW attack for CLIP model.
+    """
     delta = torch.zeros_like(X).cuda()
     if norm == "l_inf":
         delta.uniform_(-epsilon, epsilon)
@@ -43,14 +45,9 @@ def attack_CW(
     delta = clamp(delta, lower_limit - X, upper_limit - X)
     delta.requires_grad = True
     for _ in range(attack_iters):
-        # output = model(normalize(X ))
         _images = clip_img_preprocessing(X + delta, device)
-        if prompter is not None:
-            prompted_images = prompter(_images)
-        else:
-            prompted_images = _images
 
-        output, _, _ = multiGPU_CLIP(model, prompted_images, text_tokens, prompt_token=None)
+        output, _, _ = multiGPU_CLIP(model, _images, text_tokens)
 
         num_class = output.size(1)
         label_mask = one_hot_embedding(target, num_class, device)

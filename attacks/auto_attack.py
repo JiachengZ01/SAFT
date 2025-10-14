@@ -3,11 +3,12 @@ from autoattack import AutoAttack
 import functools
 
 def autoattack_CLIP(model, images, target, text_tokens, device, attacks_to_run=['apgd-ce', 'apgd-dlr'], epsilon=0):
-
+    """
+    AutoAttack for CLIP model.
+    """
     forward_pass = functools.partial(
         multiGPU_CLIP_image_logits,
-        model=model, text_tokens=text_tokens, device=device,
-        prompter=None, add_prompter=None
+        model=model, text_tokens=text_tokens, device=device
     )
 
     adversary = AutoAttack(forward_pass, norm='Linf', eps=epsilon, version='standard', verbose=False, device=device)
