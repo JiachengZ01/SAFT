@@ -41,42 +41,47 @@ pip install -r requirements.txt
 Train on TinyImageNet with single template prompt:
 
 ```bash
-python main.py --Method "TGA-ZSR" --ncaps 0 --batch_size 128 --epochs 10 --seed 1
+python main.py --Method "TGA-ZSR" --ncaps 0 --batch_size 128 --epochs 10
 ```
 
 #### SAFT Training (SAFT-L)
 Train with multiple semantic captions:
 
 ```bash
-python main.py --ncaps 5 --batch_size 128 --epochs 10 --seed 1
+python main.py --ncaps 5 --batch_size 128 --epochs 10
 ```
 
 #### SAFT Training (SAFT-M)
 Use MLLM-generated descriptions:
 
 ```bash
-python main.py --ncaps 5 --batch_size 128 --epochs 10 --seed 1 --MLLM
+python main.py --ncaps 5 --batch_size 128 --epochs 10 --MLLM
 ```
 
 ### Evaluation
-A SAFT-L checkpoint fine-tuned on Tiny-ImageNet is provided at [this link](https://drive.google.com/drive/folders/14_CwrrAe1_otRRysMf8bmXruBl-6gxpD?usp=sharing). To evaluate, copy the checkpoint directory into `./save/models/`.
+A SAFT-L checkpoint fine-tuned on Tiny-ImageNet is provided at [this link](https://drive.google.com/drive/folders/14_CwrrAe1_otRRysMf8bmXruBl-6gxpD?usp=sharing). To evaluate, copy the checkpoint directory into `./save/models/` and run the following command:
 
+```bash
+python main.py --ncaps 5 --seed 3 --checkpoint
+```
+
+Otherwise, if you have trained your own checkpoints:
 #### Evaluation on TGA-ZSR (Baseline)
 
 ```bash
-python main.py --Method "TGA-ZSR" --ncaps 0 --seed 1 --checkpoint
+python main.py --Method "TGA-ZSR" --ncaps 0 --checkpoint
 ```
 
 #### Evaluation on SAFT-L
 
 ```bash
-python main.py --ncaps 5 --seed 1 --checkpoint
+python main.py --ncaps 5 --checkpoint
 ```
 
 #### Evaluation on SAFT-M
 
 ```bash
-python main.py --ncaps 5 --seed 1 --MLLM --checkpoint 
+python main.py --ncaps 5 --MLLM --checkpoint 
 ```
 
 ---
