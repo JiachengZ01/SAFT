@@ -63,19 +63,19 @@ python main.py --ncaps 5 --batch_size 128 --epochs 10 --seed 1 --MLLM
 #### Evaluation on TGA-ZSR
 
 ```bash
-python main.py --Method "TGA-ZSR" --ncaps 0 --template --seed 1 --checkpoint
+python main.py --Method "TGA-ZSR" --ncaps 0 --seed 1 --checkpoint
 ```
 
 #### Evaluation on SAFT-L
 
 ```bash
-python main.py --ncaps 5 --template --seed 1 --checkpoint
+python main.py --ncaps 5 --seed 1 --checkpoint
 ```
 
 #### Evaluation on SAFT-M
 
 ```bash
-python main.py --ncaps 5 --template --seed 1 --MLLM --checkpoint 
+python main.py --ncaps 5 --seed 1 --MLLM --checkpoint 
 ```
 
 ---
