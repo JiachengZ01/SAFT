@@ -1,7 +1,4 @@
-# SAFT: Semantic-Aware Adversarial Fine-Tuning
-
-Code repository for SAFT.
-
+# [TMLR 2026] SAFT: Semantic-Aware Adversarial Fine-Tuning
 ---
 ## Installation
 
