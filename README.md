@@ -1,4 +1,4 @@
-# [TMLR 2026] SAFT: Semantic-Aware Adversarial Fine-Tuning
+# Semantic-aware Adversarial Fine-tuning for CLIP
 ---
 ## Installation
 
